@@ -20,7 +20,7 @@ from sklearn.preprocessing import StandardScaler
 
 from config import (DATA_PATH, FEATURES as BASE_FEATURES, RESULTS_DIR, TARGET,
                     TEST_YEAR, TRAIN_YEARS, VALIDATION_YEAR)
-from metrics import mae, rmse, selection_score, to_counts, top10_rmse
+from metrics import mae, rmse, selection_score, top10_rmse
 
 warnings.filterwarnings("ignore")   # sklearn FutureWarnings from LogisticRegressionCV
 
@@ -54,14 +54,14 @@ def scale(train, *others):
 
 def combine_stages(clf_pred, reg, X, offset=None):
     """Classifier says 0 -> 0 medals. Says 1 -> regressor prediction (plus offset if the
-    regressor predicts a change), rounded and clipped at 0 by to_counts."""
+    regressor predicts a change), clipped at 0. Not rounded, same as Part 1."""
     y_pred = np.zeros(len(X))
     mask = np.asarray(clf_pred) == 1
     if mask.any():
         raw = reg.predict(X[mask])
         if offset is not None:
             raw = raw + np.asarray(offset)[mask]
-        y_pred[mask] = to_counts(raw)
+        y_pred[mask] = np.clip(raw, 0, None)
     return y_pred
 
 
